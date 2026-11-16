@@ -1,45 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Task Manager</title>
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f6ef">
+  <meta name="description" content="A calm, simple task tracker to make progress one step at a time.">
+  <title>Brightday — Little steps, big progress</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
 </head>
-
 <body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Brightday home">
+        <span class="brand-mark">✳</span>
+        <span>brightday</span>
+      </a>
+      <span class="top-note">A little progress every day</span>
+    </header>
 
-    <main class="container">
+    <section class="intro">
+      <p class="eyebrow">YOUR PERSONAL TASK SPACE</p>
+      <h1>Make room for<br><span>what matters.</span></h1>
+      <p class="intro-copy">One clear next step is enough. Add a task and keep moving.</p>
+    </section>
 
-        <h1>Task Manager</h1>
+    <section class="workspace" aria-label="Task manager">
+      <form id="task-form" class="add-form">
+        <label class="visually-hidden" for="task-title">What needs doing?</label>
+        <input id="task-title" name="title" type="text" maxlength="120"
+          placeholder="What needs doing today?" autocomplete="off" required>
+        <button class="add-button" type="submit"><span aria-hidden="true">＋</span> Add task</button>
+      </form>
 
-        <div class="add-section">
-            <input type="text" id="title" placeholder="Enter your task">
-
-            <button id="add">Add Task</button>
+      <div class="list-heading">
+        <div>
+          <h2>Your tasks</h2>
+          <p><span id="total-count">0</span> total · <span id="done-count">0</span> completed</p>
         </div>
+        <span class="sun-icon" aria-hidden="true">☀</span>
+      </div>
 
-        <div class="filter-section">
-            <label for="filter">Filter tasks:</label>
+      <nav class="filters" aria-label="Filter tasks">
+        <button type="button" class="filter-button active" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" class="filter-button" data-filter="todo" aria-pressed="false">To do</button>
+        <button type="button" class="filter-button" data-filter="in-progress" aria-pressed="false">In progress</button>
+        <button type="button" class="filter-button" data-filter="done" aria-pressed="false">Done</button>
+      </nav>
 
-            <select id="filter">
-                <option value="all">All Tasks</option>
-                <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
-                <option value="done">Completed</option>
-            </select>
-        </div>
+      <ul id="task-list" class="task-list" aria-live="polite"></ul>
+      <p id="empty-state" class="empty-state">Nothing here yet. Add your first task above ✨</p>
+    </section>
 
-        <ul id="list"></ul>
-
-    </main>
-
-    <!-- Browser runs compiled JavaScript -->
-    <script type="module" src="app.js"></script>
-
+    <footer>Made for focused days <span aria-hidden="true">·</span> Built with TypeScript</footer>
+  </main>
 </body>
-
 </html>
