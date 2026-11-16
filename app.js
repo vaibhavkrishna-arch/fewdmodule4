@@ -1,54 +1,81 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const model_js_1 = require("./model.js");
+import { addTask, advanceTask, filterByStatus, } from "./model.js";
+const taskForm = document.getElementById("task-form");
+const titleInput = document.getElementById("task-title");
+const taskList = document.getElementById("task-list");
+const emptyState = document.getElementById("empty-state");
+const filterButtons = document.querySelectorAll("[data-filter]");
+const totalCount = document.getElementById("total-count");
+const doneCount = document.getElementById("done-count");
 let tasks = [];
-let currentFilter = "all";
-// HTML elements
-const titleInput = document.getElementById("title");
-const addBtn = document.getElementById("add");
-const listEl = document.getElementById("list");
-const filterSelect = document.getElementById("filter");
-// Add task
-addBtn.onclick = () => {
-    const title = titleInput.value.trim();
-    if (!title)
-        return;
-    tasks = (0, model_js_1.addTask)(tasks, title);
-    titleInput.value = "";
-    render();
+let activeFilter = "all";
+const statusLabels = {
+    todo: "To do",
+    "in-progress": "In progress",
+    done: "Done",
 };
-// Filter selection
-filterSelect.onchange = () => {
-    currentFilter = filterSelect.value;
-    render();
-};
-// Render tasks
-function render() {
-    listEl.innerHTML = "";
-    const visibleTasks = (0, model_js_1.filterByStatus)(tasks, currentFilter);
-    visibleTasks.forEach(task => {
-        const li = document.createElement("li");
-        li.className = "task-item";
-        // Task title
-        const title = document.createElement("span");
-        title.textContent = task.title;
-        // Status badge
-        const badge = document.createElement("span");
-        badge.textContent = task.status;
-        badge.className = `badge ${task.status}`;
-        // Advance button
-        const advanceBtn = document.createElement("button");
-        advanceBtn.textContent =
-            task.status === "done" ? "Completed" : "Advance";
-        advanceBtn.disabled = task.status === "done";
-        advanceBtn.onclick = () => {
-            tasks = (0, model_js_1.advanceTask)(tasks, task.id);
-            render();
-        };
-        li.appendChild(title);
-        li.appendChild(badge);
-        li.appendChild(advanceBtn);
-        listEl.appendChild(li);
+function renderTasks() {
+    const visibleTasks = filterByStatus(tasks, activeFilter);
+    taskList.replaceChildren();
+    visibleTasks.forEach((task) => {
+        const item = document.createElement("li");
+        item.className = `task-card task-${task.status}`;
+        const content = document.createElement("div");
+        content.className = "task-content";
+        const taskTitle = document.createElement("span");
+        taskTitle.className = "task-name";
+        taskTitle.textContent = task.title;
+        const status = document.createElement("span");
+        status.className = `status-badge badge-${task.status}`;
+        status.textContent = statusLabels[task.status];
+        content.append(taskTitle, status);
+        const advanceButton = document.createElement("button");
+        advanceButton.type = "button";
+        advanceButton.className = "advance-button";
+        advanceButton.textContent =
+            task.status === "done" ? "Completed ✓" : "Advance →";
+        advanceButton.disabled = task.status === "done";
+        advanceButton.setAttribute("aria-label", task.status === "done"
+            ? `${task.title} is complete`
+            : `Advance ${task.title}`);
+        advanceButton.addEventListener("click", () => {
+            tasks = advanceTask(tasks, task.id);
+            renderTasks();
+        });
+        item.append(content, advanceButton);
+        taskList.append(item);
+    });
+    emptyState.hidden = visibleTasks.length > 0;
+    totalCount.textContent = String(tasks.length);
+    doneCount.textContent = String(tasks.filter((task) => task.status === "done").length);
+    filterButtons.forEach((button) => {
+        const isActive = button.dataset.filter === activeFilter;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-pressed", String(isActive));
     });
 }
-//# sourceMappingURL=app.js.map
+taskForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const title = titleInput.value.trim();
+    if (!title) {
+        titleInput.focus();
+        return;
+    }
+    tasks = addTask(tasks, title);
+    titleInput.value = "";
+    activeFilter = "all";
+    renderTasks();
+    titleInput.focus();
+});
+filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        const requestedFilter = button.dataset.filter;
+        if (requestedFilter === "all" ||
+            requestedFilter === "todo" ||
+            requestedFilter === "in-progress" ||
+            requestedFilter === "done") {
+            activeFilter = requestedFilter;
+            renderTasks();
+        }
+    });
+});
+renderTasks();

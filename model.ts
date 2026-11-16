@@ -1,47 +1,49 @@
-// 1. The blueprint definitions
-type TaskStatus = "todo" | "in-progress" | "done";
+export type TaskStatus = "todo" | "in-progress" | "done";
+export type TaskFilter = TaskStatus | "all";
 
-interface Task {
+export interface Task {
   id: number;
   title: string;
   status: TaskStatus;
+  createdAt: number;
 }
 
-// 2. The core logic functions
-function addTask(tasks: Task[], title: string): Task[] {
-  const nextId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
-  const newTask: Task = {
-    id: nextId,
-    title,
-    status: "todo"
+let nextId = 1;
+
+export function addTask(tasks: Task[], title: string): Task[] {
+  const cleanTitle = title.trim();
+  if (!cleanTitle) return tasks;
+
+  const task: Task = {
+    id: nextId++,
+    title: cleanTitle,
+    status: "todo",
+    createdAt: Date.now(),
   };
-  return [...tasks, newTask];
+
+  return [...tasks, task];
 }
 
-function completeTask(tasks: Task[], id: number): Task[] {
-  return tasks.map(task => 
-    task.id === id ? { ...task, status: "done" } : task
-  );
+export function advanceTask(tasks: Task[], taskId: number): Task[] {
+  return tasks.map((task) => {
+    if (task.id !== taskId) return task;
+
+    const nextStatus: TaskStatus =
+      task.status === "todo"
+        ? "in-progress"
+        : task.status === "in-progress"
+          ? "done"
+          : "done";
+
+    return { ...task, status: nextStatus };
+  });
 }
 
-function filterByStatus(tasks: Task[], status: TaskStatus): Task[] {
-  return tasks.filter(task => task.status === status);
+export function filterByStatus(
+  tasks: Task[],
+  status: TaskFilter,
+): Task[] {
+  return status === "all"
+    ? tasks
+    : tasks.filter((task) => task.status === status);
 }
-
-// ==========================================
-// 3. Testing Playground (See the results)
-// ==========================================
-let myTasks: Task[] = [];
-
-// Add tasks
-myTasks = addTask(myTasks, "Submit Part 1 PR");
-myTasks = addTask(myTasks, "Review PR feedback");
-console.log("1. After adding tasks:", myTasks);
-
-// Complete a task
-myTasks = completeTask(myTasks, 1);
-console.log("2. After completing task 1:", myTasks);
-
-// Filter tasks
-const todoTasks = filterByStatus(myTasks, "todo");
-console.log("3. Filtered 'todo' tasks:", todoTasks);
